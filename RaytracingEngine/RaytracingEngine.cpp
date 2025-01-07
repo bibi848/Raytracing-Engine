@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-int main()
+static void futn()
 {
     std::cout << "Hello World!\n";
 }
