@@ -1,14 +1,14 @@
 #include <SDL.h>
 #include <iostream>
+#include <vector>
 #include "FunctionGroup.h"
 
-
-void setPixel(SDL_Renderer* renderer, int x, int y, SDL_Color color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+void setPixel(SDL_Renderer* renderer, int x, int y, int color[3]) {
+    SDL_SetRenderDrawColor(renderer, color[0], color[1], color[2], 255);
     SDL_RenderDrawPoint(renderer, x, y);
 }
 
-int RenderImage(const int WIDTH, const int HEIGHT) {
+int RenderImage(const int WIDTH, const int HEIGHT, std::vector<std::vector<std::vector<int>>>& PixelArray) {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
@@ -39,17 +39,13 @@ int RenderImage(const int WIDTH, const int HEIGHT) {
     }
 
     // Clear screen with black
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Clear with black color
     SDL_RenderClear(renderer);
 
-    for (int y = 0; y < HEIGHT; ++y)
-    {
-        for (int x = 0; x < WIDTH; ++x)
-        {
-            Uint8 red = (Uint8)((255 * x) / WIDTH); // Normalise x and y to 0-255
-            Uint8 green = (Uint8)((255 * y) / HEIGHT); 
-            SDL_Color color = { red, green, 255, 255 }; // {R,G,B,Alpha}
-            setPixel(renderer, x, y, color);
+    // Loop through the pixels and draw them
+    for (int y = 0; y < HEIGHT; ++y) {
+        for (int x = 0; x < WIDTH; ++x) {
+            setPixel(renderer, x, y, PixelArray[y][x].data()); // Pass RGB data
         }
     }
 
