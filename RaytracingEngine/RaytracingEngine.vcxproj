@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\SDL\SDL2-2.30.11\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\SDL\SDL2-2.30.11\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\SDL\SDL2-2.30.11\include;C:\SDL\SDL2_image-2.8.4\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\SDL\SDL2-2.30.11\lib\x64;C:\SDL\SDL2_image-2.8.4\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +115,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,14 +135,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Intersection.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ObjectGroup.cpp" />
     <ClCompile Include="PixelRendering.cpp" />
+    <ClCompile Include="RayFiring.cpp" />
+    <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
     <ClInclude Include="FunctionGroup.h" />
-    <ClInclude Include="ObjectGroup.h" />
+    <ClInclude Include="hittable.h" />
+    <ClInclude Include="ray.h" />
+    <ClInclude Include="sphere.h" />
+    <ClInclude Include="vec3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

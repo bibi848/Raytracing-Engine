@@ -21,10 +21,10 @@
     <ClCompile Include="PixelRendering.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intersection.cpp">
+    <ClCompile Include="RayFiring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectGroup.cpp">
+    <ClCompile Include="Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,7 +32,19 @@
     <ClInclude Include="FunctionGroup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectGroup.h">
+    <ClInclude Include="vec3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hittable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

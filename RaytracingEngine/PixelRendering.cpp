@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <SDL_image.h>
 #include <iostream>
 #include <vector>
 #include "FunctionGroup.h"
@@ -8,7 +9,35 @@ void setPixel(SDL_Renderer* renderer, int x, int y, int color[3]) {
     SDL_RenderDrawPoint(renderer, x, y);
 }
 
-int RenderImage(const int WIDTH, const int HEIGHT, std::vector<std::vector<std::vector<int>>>& PixelArray) {
+void saveImage(SDL_Renderer* renderer, const char* filename, const int WIDTH, const int HEIGHT) {
+    // Create an SDL surface to hold the pixel data
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, WIDTH, HEIGHT, 32, SDL_PIXELFORMAT_RGBA32);
+
+    if (!surface) {
+        std::cerr << "Failed to create surface: " << SDL_GetError() << std::endl;
+        return;
+    }
+
+    // Read the current renderer contents into the surface
+    if (SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_RGBA32, surface->pixels, surface->pitch) < 0) {
+        std::cerr << "Failed to read pixels: " << SDL_GetError() << std::endl;
+        SDL_FreeSurface(surface);
+        return;
+    }
+
+    // Save the surface as an image file (e.g., PNG)
+    if (IMG_SavePNG(surface, filename) != 0) {
+        std::cerr << "Failed to save image: " << IMG_GetError() << std::endl;
+    }
+    else {
+        std::cout << "Image saved as " << filename << std::endl;
+    }
+
+    // Clean up
+    SDL_FreeSurface(surface);
+}
+
+int RenderImage(const int WIDTH, const int HEIGHT, std::vector<std::vector<std::vector<int>>>& PixelArray, bool SaveImage, const char* filename) {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
@@ -63,6 +92,10 @@ int RenderImage(const int WIDTH, const int HEIGHT, std::vector<std::vector<std::
                 running = false; // Exit loop if the window is closed
             }
         }
+    }
+
+    if (SaveImage) {
+        saveImage(renderer, filename, WIDTH, HEIGHT);
     }
 
     // Cleanup
