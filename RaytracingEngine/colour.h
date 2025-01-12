@@ -2,7 +2,6 @@
 #define COLOUR_H
 
 #include "vec3.h"
-#include <iostream>
 
 using colour = Vec3;
 

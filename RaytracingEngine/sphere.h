@@ -1,24 +1,43 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
-#include "vec3.h"
 #include "hittable.h"
 
-class Sphere: public Hittable {
+class Sphere : public Hittable {
 public:
-	Sphere(const Vec3& position, float radius)
-		: pos(position), rad(radius) {
+	Sphere(const Vec3& center, double radius) : center(center), radius(std::fmax(0, radius)) {}
+
+	bool hit(const Ray& r, interval ray_t, hit_record& rec) const override {
+		Vec3 oc = center - r.origin();
+		auto a = r.direction().length_squared();
+		auto h = dot(r.direction(), oc);
+		auto c = oc.length_squared() - radius * radius;
+
+		auto discriminant = h * h - a * c;
+		if (discriminant < 0)
+			return false;
+
+		auto sqrtd = std::sqrt(discriminant);
+
+		auto root = (h - sqrtd) / a;
+		if (!ray_t.surrounds(root)) {
+			root = (h + sqrtd) / a;
+			if (!ray_t.surrounds(root))
+				return false;
+		}
+
+		rec.t = root;
+		rec.p = r.at(rec.t);
+		Vec3 outward_normal = (rec.p - center) / radius;
+		rec.set_face_normal(r, outward_normal);
+
+		return true;
 	}
-
-	bool hit(const Ray& r, float t_min, float t_max) const override;
-
-	Vec3 position() const { return pos; }
-	float radius() const { return rad; }
+	
 
 private:
-	Vec3 pos;
-	float rad;
+	Vec3 center;
+	double radius;
 };
 
-
-#endif // SPHERE_H
+#endif

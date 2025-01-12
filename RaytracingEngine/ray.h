@@ -21,4 +21,4 @@ private:
     Vec3 dir;  
 };
 
-#endif // RAY_H
+#endif 

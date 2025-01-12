@@ -1,30 +1,79 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "vec3.h"
+#include "hittable.h"
+#include <fstream>
 
 class Camera {
 public:
-	Camera(const Vec3& position, const Vec3& direction, int imageWidth, int imageHeight)
-		: pos(position), dir(direction), width(imageWidth), height(imageHeight) {
+    double aspect_ratio = 1.0;
+    int image_width = 100;
+
+	void render(const Hittable& world) {
+        initialise();
+        
+        std::ofstream image_file("C:/Users/oscar/Documents/C++/Raytracing-Engine/Images/ppm/output_image5.ppm");
+
+        image_file << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+
+        for (int j = 0; j < image_height; j++) {
+            std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
+            for (int i = 0; i < image_width; i++) {
+                auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
+                auto ray_direction = pixel_center - center;
+                Ray r(center, ray_direction);
+
+                colour pixel_colour = ray_colour(r, world);
+                write_colour(image_file, pixel_colour);
+            }
+        }
+        std::clog << "\rDone.                 \n";
+        image_file.close();
+		
 	}
-
-	Vec3 position() const { return pos; }
-	Vec3 direction() const { return dir; }
-
-	int imageResolution() const {
-		return width * height;
-	}
-	float aspectRatio() const {
-		return static_cast<float>(width) / height;
-	}
-
-
 private:
-	Vec3 pos;
-	Vec3 dir;
-	int width;
-	int height;
+    int    image_height;   // Rendered image height
+    Vec3   center;         // Camera center
+    Vec3   pixel00_loc;    // Location of pixel 0, 0
+    Vec3   pixel_delta_u;  // Offset to pixel to the right
+    Vec3   pixel_delta_v;  // Offset to pixel below
 
+    void initialise() {
+        image_height = int(image_width / aspect_ratio);
+        image_height = (image_height < 1) ? 1 : image_height;
+
+        center = Vec3(0, 0, 0);
+
+        // Determine viewport dimensions.
+        auto focal_length = 1.0;
+        auto viewport_height = 2.0;
+        auto viewport_width = viewport_height * (double(image_width) / image_height);
+
+        // Calculate the vectors across the horizontal and down the vertical viewport edges.
+        auto viewport_u = Vec3(viewport_width, 0, 0);
+        auto viewport_v = Vec3(0, -viewport_height, 0);
+
+        // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+        pixel_delta_u = viewport_u / image_width;
+        pixel_delta_v = viewport_v / image_height;
+
+        // Calculate the location of the upper left pixel.
+        auto viewport_upper_left =
+            center - Vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+        pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+    }
+
+    colour ray_colour(const Ray& r, const Hittable& world) {
+        hit_record rec;
+        if (world.hit(r, interval(0, infinity), rec)) {
+            return 0.5 * (rec.normal + colour(1, 1, 1));
+        }
+
+        Vec3 unit_direction = unit_vector(r.direction());
+        auto a = 0.5 * (unit_direction.y() + 1.0);
+        return (1.0 - a) * colour(1.0, 1.0, 1.0) + a * colour(0.5, 0.7, 1.0);
+    }
 };
-#endif // CAMERA_H
+
+
+#endif

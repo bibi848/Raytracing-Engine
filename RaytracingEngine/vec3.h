@@ -1,9 +1,6 @@
 #ifndef VEC3_H
 #define VEC3_H
 
-#include <cmath>
-#include <iostream>
-
 class Vec3 {
 public:
     double e[3];
@@ -91,4 +88,4 @@ inline Vec3 unit_vector(const Vec3& v) {
     return v / v.length();
 }
 
-#endif // VEC3_H
+#endif 
