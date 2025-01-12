@@ -12,8 +12,8 @@ public:
 
     Vec3 origin() const { return orig; }
     Vec3 direction() const { return dir; }
-    Vec3 point_at_parameter(float t) const {
-        return orig + dir.scMult(t);
+    Vec3 at(double t) const {
+        return orig + t * dir;
     }
 
 private:

@@ -136,12 +136,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PixelRendering.cpp" />
-    <ClCompile Include="RayFiring.cpp" />
-    <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="colour.h" />
     <ClInclude Include="FunctionGroup.h" />
     <ClInclude Include="hittable.h" />
     <ClInclude Include="ray.h" />
