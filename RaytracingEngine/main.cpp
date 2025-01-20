@@ -27,10 +27,14 @@ int main() {
     Camera camera;
 
     camera.aspect_ratio = 16.0 / 9.0;
-    camera.image_width = 400;
-    camera.samples_per_pixel = 20;
+    camera.image_width = 800;
+    camera.samples_per_pixel = 100;
     camera.max_depth = 50;
-    camera.vfov = 90;
+
+    camera.vfov = 30;
+    camera.lookfrom = Vec3(-2, 2, 1);
+    camera.lookat = Vec3(0, 0, -1);
+    camera.vup = Vec3(0, 1, 0);
 
     camera.render(world);
 
