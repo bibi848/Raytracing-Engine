@@ -69,7 +69,7 @@ public:
 		else {
 			direction = refract(unit_direction, rec.normal, ri);
 		}
-
+		scattered = Ray(rec.p, direction);
 		return true;
 	}
 
