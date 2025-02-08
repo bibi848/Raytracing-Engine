@@ -24,7 +24,7 @@ public:
 	void render(const Hittable& world) {
         initialise();
         
-        std::ofstream image_file("C:/Users/oscar/Documents/C++/Raytracing-Engine/Images/ppm/output_image15.ppm");
+        std::ofstream image_file("C:/Users/oscar/Documents/C++/Raytracing-Engine/Images/ppm/output_image16.ppm");
 
         image_file << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 

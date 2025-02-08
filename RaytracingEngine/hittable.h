@@ -53,6 +53,8 @@ public:
         return true;
     }
 
+    aabb bounding_box() const override { return bbox; }
+
 private:
     shared_ptr<Hittable> object;
     Vec3 offset;
@@ -61,7 +63,6 @@ private:
 
 class Rotate_y : public Hittable {
 public:
-
     Rotate_y(shared_ptr<Hittable> object, double angle) : object(object) {
         auto radians = deg2rad(angle);
         sin_theta = std::sin(radians);
@@ -93,7 +94,6 @@ public:
 
         bbox = aabb(min, max);
     }
-
 
     bool hit(const Ray& r, interval ray_t, hit_record& rec) const override {
 
@@ -134,6 +134,7 @@ public:
 
         return true;
     }
+    aabb bounding_box() const override { return bbox; }
 
 private:
     shared_ptr<Hittable> object;
