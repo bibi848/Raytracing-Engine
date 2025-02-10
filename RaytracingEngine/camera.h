@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "hittable.h"
+#include "pdf.h"
 #include "material.h"
 #include <fstream>
 
@@ -21,7 +22,7 @@ public:
     double defocus_angle = 0; //Variation angle of rays through each pixel
     double focus_dist = 10;   // Distance from camera lookfrom point to plane of perfect focus
 
-	void render(const Hittable& world) {
+	void render(const Hittable& world, const Hittable& lights) {
         initialise();
         
         std::ofstream image_file("C:/Users/oscar/Documents/C++/Raytracing-Engine/Images/ppm/output_image16.ppm");
@@ -32,9 +33,11 @@ public:
             std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
             for (int i = 0; i < image_width; i++) {
                 colour pixel_colour(0, 0, 0);
-                for (int sample = 0; sample < samples_per_pixel; sample++) {
-                    Ray r = get_ray(i, j);
-                    pixel_colour += ray_colour(r, max_depth, world);
+                for (int s_j = 0; s_j < sqrt_spp; s_j++) {
+                    for (int s_i = 0; s_i < sqrt_spp; s_i++) {
+                        Ray r = get_ray(i, j, s_i, s_j);
+                        pixel_colour += ray_colour(r, max_depth, world, lights);
+                    }
                 }
                 write_colour(image_file, pixel_samples_scale * pixel_colour);
             }
@@ -46,6 +49,8 @@ public:
 private:
     int    image_height;        // Rendered image height
     double pixel_samples_scale; // Colour scale factor for a sum of pixel samples
+    int    sqrt_spp;             // Square root of number of samples per pixel
+    double recip_sqrt_spp;       // 1 / sqrt_spp
     Vec3   center;              // Camera center
     Vec3   pixel00_loc;         // Location of pixel 0, 0
     Vec3   pixel_delta_u;       // Offset to pixel to the right
@@ -58,7 +63,9 @@ private:
         image_height = int(image_width / aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;
 
-        pixel_samples_scale = 1.0 / samples_per_pixel;
+        sqrt_spp = int(std::sqrt(samples_per_pixel));
+        pixel_samples_scale = 1.0 / (sqrt_spp * sqrt_spp);
+        recip_sqrt_spp = 1.0 / sqrt_spp;
 
         center = lookfrom;
 
@@ -92,15 +99,27 @@ private:
 
     }
 
-    Ray get_ray(int i, int j) const {
+    Ray get_ray(int i, int j, int s_i, int s_j) const {
+        // Construct a camera ray originating from the defocus disk and directed at a randomly
+        // sampled point around the pixel location i, j for stratified sample square s_i, s_j.
 
-        auto offset = sample_square();
+        auto offset = sample_square_stratified(s_i, s_j);
         auto pixel_sample = pixel00_loc + ((i + offset.x()) * pixel_delta_u) + ((j + offset.y()) * pixel_delta_v);
         auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
         auto ray_time = random_double();
 
         return Ray(ray_origin, ray_direction, ray_time);
+    }
+
+    Vec3 sample_square_stratified(int s_i, int s_j) const {
+        // Returns the vector to a random point in the square sub-pixel specified by grid
+        // indices s_i and s_j, for an idealized unit square pixel [-.5,-.5] to [+.5,+.5].
+
+        auto px = ((s_i + random_double()) * recip_sqrt_spp) - 0.5;
+        auto py = ((s_j + random_double()) * recip_sqrt_spp) - 0.5;
+
+        return Vec3(px, py, 0);
     }
 
     Vec3 sample_square() const {
@@ -113,7 +132,7 @@ private:
     }
 
 
-    colour ray_colour(const Ray& r, int depth, const Hittable& world) {
+    colour ray_colour(const Ray& r, int depth, const Hittable& world, const Hittable& lights) const {
 
         if (depth <= 0) {
             return colour(0, 0, 0);
@@ -126,12 +145,20 @@ private:
 
         Ray scattered;
         colour attenuation;
-        colour color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
+        double pdf_value;
+        colour color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
 
-        if (!rec.mat->scatter(r, rec, attenuation, scattered))
+        if (!rec.mat->scatter(r, rec, attenuation, scattered, pdf_value))
             return color_from_emission;
 
-        colour color_from_scatter = attenuation * ray_colour(scattered, depth - 1, world);
+        hittable_pdf light_pdf(lights, rec.p);
+        scattered = Ray(rec.p, light_pdf.generate(), r.time());
+        pdf_value = light_pdf.value(scattered.direction());
+
+        double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered);
+
+        colour sample_colour = ray_colour(scattered, depth - 1, world, lights);
+        colour color_from_scatter = (attenuation * scattering_pdf * sample_colour) / pdf_value;
 
         return color_from_emission + color_from_scatter;
     }

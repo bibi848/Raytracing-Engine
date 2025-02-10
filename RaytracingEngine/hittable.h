@@ -28,6 +28,14 @@ public:
     virtual bool hit(const Ray& r, interval ray_t, hit_record& rec) const = 0;
 
     virtual aabb bounding_box() const = 0;
+
+    virtual double pdf_value(const Vec3& origin, const Vec3& direction) const {
+        return 0.0;
+    }
+
+    virtual Vec3 random(const Vec3& origin) const {
+        return Vec3(1, 0, 0);
+    }
 };
 
 class Translate : public Hittable {

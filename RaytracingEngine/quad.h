@@ -14,6 +14,7 @@ public:
         D = dot(normal, Q);
         w = n / dot(n, n);
 
+        area = n.length();
         set_bounding_box();
     }
 
@@ -70,6 +71,22 @@ public:
         return true;
     }
 
+    double pdf_value(const Vec3& origin, const Vec3& direction) const override {
+        hit_record rec;
+        if (!this->hit(Ray(origin, direction), interval(0.001, infinity), rec))
+            return 0;
+
+        auto distance_squared = rec.t * rec.t * direction.length_squared();
+        auto cosine = std::fabs(dot(direction, rec.normal) / direction.length());
+
+        return distance_squared / (cosine * area);
+    }
+
+    Vec3 random(const Vec3& origin) const override {
+        auto p = Q + (random_double() * u) + (random_double() * v);
+        return p - origin;
+    }
+
 private:
     Vec3 Q;
     Vec3 u, v;
@@ -78,6 +95,7 @@ private:
     aabb bbox;
     Vec3 normal;
     double D;
+    double area;
 };
 
 inline shared_ptr<hittable_list> box(const Vec3& a, const Vec3& b, shared_ptr<Material> mat)
@@ -94,12 +112,12 @@ inline shared_ptr<hittable_list> box(const Vec3& a, const Vec3& b, shared_ptr<Ma
     auto dy = Vec3(0, max.y() - min.y(), 0);
     auto dz = Vec3(0, 0, max.z() - min.z());
 
-    sides->add(make_shared<quad>(Vec3(min.x(), min.y(), max.z()), dx, dy, mat)); // front
-    sides->add(make_shared<quad>(Vec3(max.x(), min.y(), max.z()), -dz, dy, mat)); // right
-    sides->add(make_shared<quad>(Vec3(max.x(), min.y(), min.z()), -dx, dy, mat)); // back
-    sides->add(make_shared<quad>(Vec3(min.x(), min.y(), min.z()), dz, dy, mat)); // left
+    sides->add(make_shared<quad>(Vec3(min.x(), min.y(), max.z()), dx, dy, mat));  // Front
+    sides->add(make_shared<quad>(Vec3(max.x(), min.y(), max.z()), -dz, dy, mat)); // Right
+    sides->add(make_shared<quad>(Vec3(max.x(), min.y(), min.z()), -dx, dy, mat)); // Back
+    sides->add(make_shared<quad>(Vec3(min.x(), min.y(), min.z()), dz, dy, mat));  // Left
     sides->add(make_shared<quad>(Vec3(min.x(), max.y(), max.z()), dx, -dz, mat)); // top
-    sides->add(make_shared<quad>(Vec3(min.x(), min.y(), min.z()), dx, dz, mat)); // bottom
+    sides->add(make_shared<quad>(Vec3(min.x(), min.y(), min.z()), dx, dz, mat));  // Bottom
 
     return sides;
 }
