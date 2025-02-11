@@ -25,7 +25,7 @@ public:
 	void render(const Hittable& world, const Hittable& lights) {
         initialise();
         
-        std::ofstream image_file("C:/Users/oscar/Documents/C++/Raytracing-Engine/Images/ppm/output_image16.ppm");
+        std::ofstream image_file("C:/Users/oscar/Documents/C++/Raytracing-Engine/Images/ppm/output_image18.ppm");
 
         image_file << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
@@ -143,22 +143,27 @@ private:
         if (!world.hit(r, interval(0.001, infinity), rec))
             return background;
 
-        Ray scattered;
-        colour attenuation;
-        double pdf_value;
+        scatter_record srec;
         colour color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
 
-        if (!rec.mat->scatter(r, rec, attenuation, scattered, pdf_value))
+        if (!rec.mat->scatter(r, rec, srec))
             return color_from_emission;
 
-        hittable_pdf light_pdf(lights, rec.p);
-        scattered = Ray(rec.p, light_pdf.generate(), r.time());
-        pdf_value = light_pdf.value(scattered.direction());
+        if (srec.skip_pdf) {
+            return srec.attenuation * ray_colour(srec.skip_pdf_ray, depth - 1, world, lights);
+        }
+
+        auto light_ptr = make_shared<hittable_pdf>(lights, rec.p);
+        mixture_pdf p(light_ptr, srec.pdf_ptr);
+
+        Ray scattered = Ray(rec.p, p.generate(), r.time());
+        auto pdf_value = p.value(scattered.direction());
 
         double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered);
 
-        colour sample_colour = ray_colour(scattered, depth - 1, world, lights);
-        colour color_from_scatter = (attenuation * scattering_pdf * sample_colour) / pdf_value;
+        colour sample_color = ray_colour(scattered, depth - 1, world, lights);
+        colour color_from_scatter =
+            (srec.attenuation * scattering_pdf * sample_color) / pdf_value;
 
         return color_from_emission + color_from_scatter;
     }

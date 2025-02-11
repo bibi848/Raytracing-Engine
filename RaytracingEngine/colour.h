@@ -20,6 +20,11 @@ void write_colour(std::ostream& out, const colour& pixel_colour) {
 	auto g = pixel_colour.y();
 	auto b = pixel_colour.z();
 
+	// Replace NaN components with zero
+	if (r != r) r = 0.0;
+	if (g != g) g = 0.0;
+	if (b != b) b = 0.0;
+
 	r = linear_to_gamma(r);
 	g = linear_to_gamma(g);
 	b = linear_to_gamma(b);

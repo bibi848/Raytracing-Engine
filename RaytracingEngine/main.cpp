@@ -30,21 +30,21 @@ void cornell_box() {
     // Light
     world.add(make_shared<quad>(Vec3(213, 554, 227), Vec3(130, 0, 0), Vec3(0, 0, 105), light));
 
-    // Box 1
+    // Box
     shared_ptr<Hittable> box1 = box(Vec3(0, 0, 0), Vec3(165, 330, 165), white);
     box1 = make_shared<Rotate_y>(box1, 15);
     box1 = make_shared<Translate>(box1, Vec3(265, 0, 295));
     world.add(box1);
 
-    // Box 2
-    shared_ptr<Hittable> box2 = box(Vec3(0, 0, 0), Vec3(165, 165, 165), white);
-    box2 = make_shared<Rotate_y>(box2, -18);
-    box2 = make_shared<Translate>(box2, Vec3(130, 0, 65));
-    world.add(box2);
+    // Glass Sphere
+    auto glass = make_shared<Dielectric>(1.5);
+    world.add(make_shared<Sphere>(Vec3(190, 90, 190), 90, glass));
 
     // Light Sources
     auto empty_material = shared_ptr<Material>();
-    quad lights(Vec3(343, 554, 332), Vec3(-130, 0, 0), Vec3(0, 0, -105), empty_material);
+    hittable_list lights;
+    lights.add(make_shared<quad>(Vec3(343, 554, 332), Vec3(-130, 0, 0), Vec3(0, 0, -105), empty_material));
+    lights.add(make_shared<Sphere>(Vec3(190, 90, 190), 90, empty_material));
 
     world = hittable_list(make_shared<bvh_node>(world));
 
@@ -52,7 +52,7 @@ void cornell_box() {
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 600;
-    cam.samples_per_pixel = 10;
+    cam.samples_per_pixel = 200;
     cam.max_depth = 50;
     cam.background = colour(0, 0, 0);
 
